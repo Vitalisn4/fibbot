@@ -1,34 +1,39 @@
-# Use official Rust image for the build stage
+# Step 1: Build stage using official Rust image
 FROM rust:latest as builder
 
 # Set the working directory
 WORKDIR /app
 
+# Install musl-tools to build for musl target
+RUN apt-get update && apt-get install -y musl-tools
+
+# Set up the musl target for cross-compiling
+RUN rustup target add x86_64-unknown-linux-musl
+
 # Copy the Cargo.toml and Cargo.lock files to cache dependencies
 COPY Cargo.toml Cargo.lock ./
 
-# Fetch dependencies
+# Fetch dependencies (this helps cache dependencies separately)
 RUN cargo fetch
 
 # Copy the source code into the container
 COPY . .
 
-# Build the binary
-RUN cargo build --release
+# Build the binary using musl target (for Alpine compatibility)
+RUN cargo build --release --target=x86_64-unknown-linux-musl
 
-# Final stage: Use a small image that includes the shell and necessary runtime libraries
+# Step 2: Final runtime stage with Alpine
 FROM alpine:latest
 
-# Install dependencies for running the app (glibc for Rust binaries, if necessary)
+# Install necessary dependencies for musl libc (used by Alpine)
 RUN apk add --no-cache \
-    libc6-compat \
+    musl-dev \
     gcc \
     libgcc \
-    musl-dev \
     libc-dev
 
-# Copy the binary from the build stage to the final image
-COPY --from=builder /app/target/release/fibbot /fibbot
+# Copy the compiled binary from the build stage
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/fibbot /fibbot
 
 # Set the binary as executable
 RUN chmod +x /fibbot
