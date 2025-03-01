@@ -4,14 +4,26 @@ FROM rust:latest as builder
 # Set the working directory
 WORKDIR /app
 
-# Install musl-tools and OpenSSL development libraries for compiling with musl
+# Install the necessary dependencies for building with musl and OpenSSL
 RUN apt-get update && apt-get install -y \
     musl-tools \
     pkg-config \
     libssl-dev \
     gcc \
     make \
-    libclang-dev
+    libclang-dev \
+    curl \
+    bash \
+    file \
+    git
+
+# Install OpenSSL and configure pkg-config for cross-compilation
+RUN curl -LO https://www.openssl.org/source/openssl-1.1.1k.tar.gz && \
+    tar -xvzf openssl-1.1.1k.tar.gz && \
+    cd openssl-1.1.1k && \
+    ./config --prefix=/usr/local --openssldir=/usr/local/openssl && \
+    make && \
+    make install
 
 # Set up the musl target for cross-compiling
 RUN rustup target add x86_64-unknown-linux-musl
