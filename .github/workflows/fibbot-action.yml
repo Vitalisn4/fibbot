@@ -1,0 +1,24 @@
+name: "FibBot Action workflow"
+
+on:
+  push:
+    branches:
+      - master 
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  run-fibbot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build FibBot Docker image
+        run: |
+          docker build -t fibbot .
+
+      - name: Run FibBot
+        run: |
+          docker run fibbot
