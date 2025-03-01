@@ -21,11 +21,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Build fibbot
+    - name: Build FibBot
       run: cargo build --release
       shell: bash
 
-    - name: Run fibbot
+    - name: Run FibBot
       run: |
         export PR_NUMBER="${{ inputs.pr_number }}"
         export GITHUB_TOKEN="${{ inputs.github_token }}"

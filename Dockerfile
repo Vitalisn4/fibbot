@@ -1,21 +1,23 @@
-# Stage 1: Build the Rust application
+# First Stage: Build the Rust Application
 FROM rust:latest as builder
 
 WORKDIR /app
 
-# Copy the Cargo.toml and source code
-COPY Cargo.toml .
-COPY src ./src
+# Copy the Cargo.toml and Cargo.lock files to cache dependencies
+COPY Cargo.toml Cargo.lock ./
+RUN cargo fetch
 
-# Build the application in release mode
+# Copy the rest of the application code
+COPY . .
+
+# Build the release version of the application
 RUN cargo build --release
 
-# Stage 2: Create a minimal distroless image
+# Second Stage: Copy the built executable to a minimal image
 FROM scratch
 
-# Copy the binary from the builder stage
+# Copy the compiled binary from the builder stage
 COPY --from=builder /app/target/release/fibbot /fibbot
 
-# Set the entrypoint to run the binary
+# Set the entrypoint to the fibbot executable
 ENTRYPOINT ["/fibbot"]
-
