@@ -1,9 +1,9 @@
-name: "FibBot Action workflow"
+name: FibBot Action workflow
 
 on:
   push:
     branches:
-      - master 
+      - master
   pull_request:
     types: [opened, synchronize, reopened]
 

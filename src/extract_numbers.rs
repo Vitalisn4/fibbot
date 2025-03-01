@@ -21,4 +21,3 @@ pub fn extract_numbers(text: &str) -> Vec<u32> {
 
     numbers
 }
-
