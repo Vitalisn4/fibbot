@@ -4,7 +4,7 @@ FROM rust:latest as builder
 # Set the working directory
 WORKDIR /app
 
-# Install the necessary dependencies for building with musl and OpenSSL
+# Install necessary build dependencies
 RUN apt-get update && apt-get install -y \
     musl-tools \
     pkg-config \
@@ -17,21 +17,13 @@ RUN apt-get update && apt-get install -y \
     file \
     git
 
-# Install OpenSSL and configure pkg-config for cross-compilation
-RUN curl -LO https://www.openssl.org/source/openssl-1.1.1k.tar.gz && \
-    tar -xvzf openssl-1.1.1k.tar.gz && \
-    cd openssl-1.1.1k && \
-    ./config --prefix=/usr/local --openssldir=/usr/local/openssl && \
-    make && \
-    make install
-
 # Set up the musl target for cross-compiling
 RUN rustup target add x86_64-unknown-linux-musl
 
-# Copy the Cargo.toml and Cargo.lock files to cache dependencies
+# Copy only the Cargo.toml and Cargo.lock files (this allows caching dependencies)
 COPY Cargo.toml Cargo.lock ./
 
-# Fetch dependencies (this helps cache dependencies separately)
+# Fetch dependencies (this will be cached unless Cargo.toml or Cargo.lock change)
 RUN cargo fetch
 
 # Copy the source code into the container
