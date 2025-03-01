@@ -4,8 +4,14 @@ FROM rust:latest as builder
 # Set the working directory
 WORKDIR /app
 
-# Install musl-tools to build for musl target
-RUN apt-get update && apt-get install -y musl-tools
+# Install musl-tools and OpenSSL development libraries for compiling with musl
+RUN apt-get update && apt-get install -y \
+    musl-tools \
+    pkg-config \
+    libssl-dev \
+    gcc \
+    make \
+    libclang-dev
 
 # Set up the musl target for cross-compiling
 RUN rustup target add x86_64-unknown-linux-musl
