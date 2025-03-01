@@ -2,26 +2,11 @@ use reqwest::Client;
 use std::env;
 
 pub async fn post_comment(pr_content: &str) -> Result<(), reqwest::Error> {
-    // Handle missing GITHUB_REPOSITORY environment variable
-    let repo = match env::var("GITHUB_REPOSITORY") {
-        Ok(val) => val,
-        Err(_) => {
-            eprintln!("GITHUB_REPOSITORY not set, skipping comment posting.");
-            return Ok(()); // Skip posting comment if GITHUB_REPOSITORY is not set
-        }
-    };
-
-    // Get pull request number from environment with fallback
-    let pr_number: u32 = match env::var("PR_NUMBER") {
-        Ok(val) => val.parse::<u32>().unwrap_or_else(|_| {
-            eprintln!("Invalid PR_NUMBER format, using default value.");
-            0 // Default value if PR_NUMBER is not set or invalid
-        }),
-        Err(_) => {
-            eprintln!("PR_NUMBER not set, using default value.");
-            0 // Default value if PR_NUMBER is not set
-        }
-    };
+    let repo = env::var("GITHUB_REPOSITORY").expect("GITHUB_REPOSITORY not set");
+    let pr_number = env::var("PR_NUMBER")
+        .expect("PR_NUMBER not set")
+        .parse::<u32>()
+        .expect("Invalid PR_NUMBER");
 
     let github_token = env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN not set");
 
