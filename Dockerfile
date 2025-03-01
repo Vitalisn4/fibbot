@@ -18,3 +18,4 @@ COPY --from=builder /app/target/release/fibbot /fibbot
 
 # Set the entrypoint to run the binary
 ENTRYPOINT ["/fibbot"]
+
