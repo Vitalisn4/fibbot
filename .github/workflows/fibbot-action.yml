@@ -15,10 +15,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build FibBot Docker image
+      - name: Build fibBot Docker image
         run: |
           docker build -t fibbot .
 
-      - name: Run FibBot
+      - name: Run fibbot
         run: |
           docker run fibbot
