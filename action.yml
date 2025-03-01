@@ -1,21 +1,21 @@
-name: "FibBot GitHub Action"
-description: "Scans Pull Request content for numbers, calculates their Fibonacci numbers, and posts a comment with the results."
+name: "FibBot"
+description: "A GitHub Action to calculate Fibonacci numbers from PR content."
 author: "Vitalis"
 
 inputs:
   pr_number:
-    description: "The number of the pull request"
+    description: "The number of the pull request."
     required: true
   enable_fib:
-    description: "Enable Fibonacci calculation (true/false)"
+    description: "Enable Fibonacci calculation (true/false)."
     required: true
     default: "true"
   max_threshold:
-    description: "Max threshold for Fibonacci calculation"
+    description: "Maximum threshold for Fibonacci calculation."
     required: true
     default: "100"
   github_token:
-    description: "GitHub token to interact with GitHub API"
+    description: "GitHub token to interact with GitHub API."
     required: true
 
 runs:
@@ -28,7 +28,8 @@ runs:
     - name: Run FibBot
       run: |
         export PR_NUMBER="${{ inputs.pr_number }}"
+        export ENABLE_FIB="${{ inputs.enable_fib }}"
+        export MAX_THRESHOLD="${{ inputs.max_threshold }}"
         export GITHUB_TOKEN="${{ inputs.github_token }}"
         ./target/release/fibbot "${{ inputs.enable_fib }}" "${{ inputs.max_threshold }}"
       shell: bash
-
