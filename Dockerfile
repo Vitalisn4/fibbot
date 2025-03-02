@@ -1,29 +1,37 @@
-# Build stage
-FROM rust:1.66 as builder
+# Use official Rust image for the build stage
+FROM rust:latest as builder
 
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
-# Copy manifests
+# Copy the Cargo.toml and Cargo.lock files to cache dependencies
 COPY Cargo.toml Cargo.lock ./
 
-# Build dependencies (for better caching)
-RUN mkdir src && \
-    echo "fn main() {}" > src/main.rs && \
-    cargo build --release && \
-    rm -rf src
+# Fetch dependencies
+RUN cargo fetch
 
-# Copy source code
-COPY src ./src
+# Copy the source code into the container
+COPY . .
 
-# Build the application
+# Build the binary
 RUN cargo build --release
 
-# Final stage
-FROM gcr.io/distroless/cc-debian11
+# Final stage: Use a small image that includes the shell and necessary runtime libraries
+FROM alpine:latest
 
-# Copy the built binary
+# Install dependencies for running the app (glibc for Rust binaries, if necessary)
+RUN apk add --no-cache \
+    libc6-compat \
+    gcc \
+    libgcc \
+    musl-dev \
+    libc-dev
+
+# Copy the binary from the build stage to the final image
 COPY --from=builder /app/target/release/fibbot /fibbot
 
-# Set the entrypoint
+# Set the binary as executable
+RUN chmod +x /fibbot
+
+# Run the application by default
 ENTRYPOINT ["/fibbot"]
