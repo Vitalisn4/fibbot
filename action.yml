@@ -5,31 +5,26 @@ author: "Vitalis"
 inputs:
   pr_number:
     description: "The number of the pull request."
-    required: true
+    required: false
   enable_fib:
     description: "Enable Fibonacci calculation (true/false)."
-    required: true
+    required: false
     default: "true"
   max_threshold:
     description: "Maximum threshold for Fibonacci calculation."
-    required: true
+    required: false
     default: "100"
   github_token:
     description: "GitHub token to interact with GitHub API."
     required: true
+    default: ${{ github.token }}
 
 runs:
-  using: "composite"
-  steps:
-    - name: Build FibBot
-      run: cargo build --release
-      shell: bash
-
-    - name: Run FibBot
-      run: |
-        export PR_NUMBER="${{ inputs.pr_number }}"
-        export ENABLE_FIB="${{ inputs.enable_fib }}"
-        export MAX_THRESHOLD="${{ inputs.max_threshold }}"
-        export GITHUB_TOKEN="${{ inputs.github_token }}"
-        ./target/release/fibbot "${{ inputs.enable_fib }}" "${{ inputs.max_threshold }}"
-      shell: bash
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.enable_fib }}
+    - ${{ inputs.max_threshold }}
+  env:
+    PR_NUMBER: ${{ inputs.pr_number }}
+    GITHUB_TOKEN: ${{ inputs.github_token }}

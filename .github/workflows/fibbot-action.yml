@@ -1,24 +1,24 @@
 name: "FibBot Action workflow"
 
 on:
-  push:
-    branches:
-      - master 
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
   run-fibbot:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build FibBot Docker image
-        run: |
-          docker build -t fibbot .
-
-      - name: Run FibBot
-        run: |
-          docker run fibbot
+      - name: Build and run FibBot
+        uses: ./
+        with:
+          pr_number: ${{ github.event.pull_request.number }}
+          enable_fib: "true"
+          max_threshold: "100"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
