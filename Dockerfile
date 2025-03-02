@@ -1,5 +1,8 @@
-# Use official Rust image for the build stage
-FROM rust:latest as builder
+# Build stage: Use Rust Alpine image
+FROM rust:alpine as builder
+
+# Install build dependencies
+RUN apk add --no-cache musl-dev gcc
 
 # Set the working directory
 WORKDIR /app
@@ -7,25 +10,24 @@ WORKDIR /app
 # Copy the Cargo.toml and Cargo.lock files to cache dependencies
 COPY Cargo.toml Cargo.lock ./
 
-# Fetch dependencies
-RUN cargo fetch
+# Create empty source files to cache dependencies
+RUN mkdir -p src && \
+    echo "fn main() {}" > src/main.rs && \
+    cargo fetch && \
+    cargo build --release && \
+    rm -rf src
 
 # Copy the source code into the container
 COPY . .
 
-# Build the binary
+# Build the binary with musl target
 RUN cargo build --release
 
-# Final stage: Use a small image that includes the shell and necessary runtime libraries
+# Final stage: Use Alpine
 FROM alpine:latest
 
-# Install dependencies for running the app (glibc for Rust binaries, if necessary)
-RUN apk add --no-cache \
-    libc6-compat \
-    gcc \
-    libgcc \
-    musl-dev \
-    libc-dev
+# Add minimal runtime dependencies if needed
+RUN apk add --no-cache ca-certificates
 
 # Copy the binary from the build stage to the final image
 COPY --from=builder /app/target/release/fibbot /fibbot
