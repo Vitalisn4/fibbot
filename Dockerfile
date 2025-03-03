@@ -1,7 +1,12 @@
-# Build in one stage with Debian
 FROM rust:slim
 
 WORKDIR /app
+
+# Install OpenSSL and pkg-config
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY . .
 
